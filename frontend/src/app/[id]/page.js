@@ -23,12 +23,19 @@ function TopPage() {
   },[
     id
   ])
+
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+
   const [products, setProducts] = useState([]);
   useEffect(()=>{
     getUserData(id)
   },[])
 
   const getUserData = (id)=>{
+    setLoading(true);
+    setError(null);
     let config = {
       method: 'get',
       url: `${baseurl}/api/user-products/${id}`,
@@ -36,10 +43,13 @@ function TopPage() {
     axios(config)
         .then(async (response) => {
 
-          setProducts(response.data.products)
+          setProducts(response.data.products || []);
+          setLoading(false);
+
         })
         .catch((err)=>{
-
+          setLoading(false);
+          setError(err.response?.data?.message || err.message || 'Failed to retrieve data');
         })
   }
 
@@ -95,33 +105,86 @@ function TopPage() {
             <div className="list-title">
               全ての商品
             </div>
+
+            
             <div className="contain">
-              {products.map((item, index)=>(
-                  <div className="list-item" key={index}>
-                    <div className="list-item-thumb">
-                      <img src={item.image} alt=""/>
-                    </div>
-                    <h3 className="list-item-title">
-                      {item.title}
-                    </h3>
-                    <div className="list-item-package">
-                      {item.package}
-                    </div>
-                    <p className="list-item-content">
-                      {item.description}
-                    </p>
-                    <div className="list-item-price">
-                      <div className="wrap">
-                        <div className="list-item-price-title">
-                          特別限定価格
-                        </div>
-                        <p>{parseInt(item.price_sell).toLocaleString('en-US').toString()} <span>(税込)</span></p>
-                      </div>
-                      <a href={`/products/${id}/${item.id}`}>今すぐ購入する</a>
+              {loading ? (
+                <div className="loading-spinner">
+                  <div className="spinner"></div>
+                  <p>Loading...</p>
+                </div>
+              ) : error ? (
+                <div className="error-modal-overlay">
+                  <div className="error-modal">
+                    <button 
+                      className="close-button"
+                      onClick={() => setError(null)}
+                    >
+                      ×
+                    </button>
+                    <div className="error-icon">⚠️</div>
+                    <h3>An error has occurred</h3>
+                    <p>{error.message || "Failed to load data"}</p>
+                    <div className="button-group">
+                      <button 
+                        className="retry-button"
+                        onClick={() => window.location.reload()}
+                      >
+                        Retry
+                      </button>
+                      <button 
+                        className="close-button-secondary"
+                        onClick={() => setError(null)}
+                      >
+                        Close
+                      </button>
                     </div>
                   </div>
-              ))}
+                </div>
+              ) : products && products.length > 0 ? (
+                products.map((item, index) => (
+                  <div className="list-item" key={index}>
+                    <div className="list-item-thumb">
+                      <img src={item.image} alt={item.title}/>
+                    </div>
+                    <h3 className="list-item-title">{item.title}</h3>
+                    <div className="list-item-package">{item.package}</div>
+                    <p className="list-item-content">{item.description}</p>
+                    <div className="list-item-price">
+                      <div className="wrap">
+                        <div className="list-item-price-title">特別限定価格</div>
+                        <p>{parseInt(item.price_sell).toLocaleString('en-US')} <span>(税込)</span></p>
+                      </div>
+                      <a href={`/products/${item.id}`}>今すぐ購入する</a>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="empty-state">
+                  <h3>Product not found</h3>
+                  <p>Sorry, we couldn't find the product you were looking for.<br/>Try different keywords or categories.</p>
+                  <div className="button-group">
+                    <button 
+                      className="retry-button"
+                      onClick={() => window.location.reload()}
+                    >
+                      Reload
+                    </button>
+                    <button 
+                      className="close-button-secondary"
+                      onClick={() => window.history.back()}
+                    >
+                      Return to previous page
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
+
+
+
+
+
           </section>
           <section className="social">
             <div className="contain">

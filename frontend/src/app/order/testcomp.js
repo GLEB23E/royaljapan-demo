@@ -14,7 +14,7 @@ const baseurl = process.env.NEXT_PUBLIC_API_BASE_URL;
 function Order({}) {
 
     const searchParams = useSearchParams();
-
+    
     // const [searchParams, setSearchParams] = useSearchParams();
     let searchParamCount = searchParams?.get("count")
     const [count, setCount] = useState(searchParamCount);
@@ -28,6 +28,9 @@ function Order({}) {
     const [email, setEmail] = useState("");
     // const [option, setOption] = useState({})
     const [price, setPrice] = useState(0);
+
+
+   
     const handleClick = async () =>{
         if(tab==1){
 
